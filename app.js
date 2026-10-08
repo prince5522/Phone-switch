@@ -65,6 +65,10 @@ function isValidIPv4(ip) {
 
 function showMessage(text, error = false) {
 
+    if (!message) {
+        return;
+    }
+
     message.textContent = text;
 
     if (error) {
@@ -138,42 +142,126 @@ async function request(path) {
 
     if (!espAddress) {
 
-        throw new Error("ESP address not set");
+        throw new Error("ESP address not set.");
 
     }
 
 
-    const controller = new AbortController();
+    const url =
+        espAddress + path;
 
-    const timeout = setTimeout(() => {
 
-        controller.abort();
+    console.log(
+        "Smart Switch request:",
+        url
+    );
 
-    }, 5000);
+
+    const controller =
+        new AbortController();
+
+
+    const timeout =
+        setTimeout(() => {
+
+            controller.abort();
+
+        }, 5000);
 
 
     try {
 
-        const response = await fetch(
-            espAddress + path,
-            {
-                method: "GET",
-                cache: "no-store",
-                signal: controller.signal
-            }
-        );
+        const response =
+            await fetch(
+                url,
+                {
+                    method: "GET",
+
+                    mode: "cors",
+
+                    cache: "no-store",
+
+                    signal: controller.signal,
+
+                    headers: {
+                        "Accept":
+                            "application/json"
+                    }
+                }
+            );
 
 
         if (!response.ok) {
 
             throw new Error(
-                "HTTP " + response.status
+                "ESP8266 returned HTTP " +
+                response.status
             );
 
         }
 
 
-        return await response.json();
+        const contentType =
+            response.headers.get(
+                "content-type"
+            ) || "";
+
+
+        if (
+            contentType.includes(
+                "application/json"
+            )
+        ) {
+
+            return await response.json();
+
+        }
+
+
+        const text =
+            await response.text();
+
+
+        try {
+
+            return JSON.parse(text);
+
+        } catch {
+
+            return {
+                response: text
+            };
+
+        }
+
+    } catch (error) {
+
+        if (
+            error.name ===
+            "AbortError"
+        ) {
+
+            throw new Error(
+                "ESP8266 connection timed out."
+            );
+
+        }
+
+
+        if (
+            window.location.protocol ===
+                "https:" &&
+            url.startsWith("http://")
+        ) {
+
+            throw new Error(
+                "HTTPS browser security blocked the HTTP ESP8266 connection."
+            );
+
+        }
+
+
+        throw error;
 
     } finally {
 
@@ -190,13 +278,14 @@ async function request(path) {
 
 async function connectDevice() {
 
-    const ip = espIp.value.trim();
+    const ip =
+        espIp.value.trim();
 
 
     if (!isValidIPv4(ip)) {
 
         showMessage(
-            "Enter a valid IPv4 address, for example 192.168.137.123.",
+            "Enter a valid IPv4 address, for example 192.168.137.3.",
             true
         );
 
@@ -205,12 +294,44 @@ async function connectDevice() {
     }
 
 
-    espAddress = "http://" + ip;
+    // --------------------------------------
+    // ESP8266 uses HTTP
+    // --------------------------------------
+
+    espAddress =
+        "http://" + ip;
+
+
+    // --------------------------------------
+    // HTTPS WARNING
+    // --------------------------------------
+
+    if (
+        window.location.protocol ===
+        "https:"
+    ) {
+
+        setOnline(false);
+
+        showMessage(
+            "GitHub Pages uses HTTPS and cannot directly connect to the HTTP ESP8266. Run this app locally over HTTP to test the ESP.",
+            true
+        );
+
+        console.warn(
+            "Mixed Content:",
+            espAddress
+        );
+
+        return;
+
+    }
 
 
     connectButton.disabled = true;
 
-    connectButton.textContent = "CONNECTING...";
+    connectButton.textContent =
+        "CONNECTING...";
 
 
     showMessage(
@@ -220,33 +341,50 @@ async function connectDevice() {
 
     try {
 
-        const data = await request(
-            "/status"
-        );
+        const data =
+            await request(
+                "/status"
+            );
 
 
-        // Save IP
+        // ----------------------------------
+        // SAVE IP
+        // ----------------------------------
+
         localStorage.setItem(
             "smartSwitchESP",
             ip
         );
 
 
-        // Show interface
-        setupCard.classList.add("hidden");
+        // ----------------------------------
+        // SHOW DEVICE INTERFACE
+        // ----------------------------------
+
+        setupCard.classList.add(
+            "hidden"
+        );
 
         showDeviceCards(true);
 
         setOnline(true);
 
 
-        // IP
-        $("deviceIp").textContent = ip;
+        // ----------------------------------
+        // DEVICE IP
+        // ----------------------------------
 
-        $("infoDeviceIp").textContent = ip;
+        $("deviceIp").textContent =
+            ip;
+
+        $("infoDeviceIp").textContent =
+            ip;
 
 
-        // Device name
+        // ----------------------------------
+        // DEVICE NAME
+        // ----------------------------------
+
         if (data.device) {
 
             $("deviceName").textContent =
@@ -258,7 +396,21 @@ async function connectDevice() {
         }
 
 
-        // Device ID
+        if (data.name) {
+
+            $("deviceName").textContent =
+                data.name;
+
+            $("infoDeviceName").textContent =
+                data.name;
+
+        }
+
+
+        // ----------------------------------
+        // DEVICE ID
+        // ----------------------------------
+
         if (data.id) {
 
             $("deviceId").textContent =
@@ -275,16 +427,26 @@ async function connectDevice() {
         }
 
 
-        // Power state
+        // ----------------------------------
+        // POWER STATE
+        // ----------------------------------
+
         updateState(data);
 
 
-        // Additional information
+        // ----------------------------------
+        // DEVICE INFORMATION
+        // ----------------------------------
+
         await loadInfo();
 
 
         showMessage("");
 
+
+        // ----------------------------------
+        // START POLLING
+        // ----------------------------------
 
         startPolling();
 
@@ -303,6 +465,7 @@ async function connectDevice() {
 
 
         showMessage(
+            error.message ||
             "Could not connect to the ESP8266. Check the IP address and make sure the ESP is online.",
             true
         );
@@ -312,7 +475,8 @@ async function connectDevice() {
 
     connectButton.disabled = false;
 
-    connectButton.textContent = "CONNECT";
+    connectButton.textContent =
+        "CONNECT";
 
 }
 
@@ -330,7 +494,8 @@ function updateState(data) {
         "OFF";
 
 
-    state = String(state).toUpperCase();
+    state =
+        String(state).toUpperCase();
 
 
     const isOn =
@@ -341,11 +506,13 @@ function updateState(data) {
 
     if (isOn) {
 
-        switchState.textContent = "ON";
+        switchState.textContent =
+            "ON";
 
     } else {
 
-        switchState.textContent = "OFF";
+        switchState.textContent =
+            "OFF";
 
     }
 
@@ -361,8 +528,14 @@ async function loadInfo() {
     try {
 
         const data =
-            await request("/info");
+            await request(
+                "/info"
+            );
 
+
+        // ----------------------------------
+        // DEVICE NAME
+        // ----------------------------------
 
         if (data.name) {
 
@@ -386,6 +559,10 @@ async function loadInfo() {
         }
 
 
+        // ----------------------------------
+        // DEVICE ID
+        // ----------------------------------
+
         if (data.id) {
 
             $("deviceId").textContent =
@@ -402,6 +579,10 @@ async function loadInfo() {
         }
 
 
+        // ----------------------------------
+        // IP
+        // ----------------------------------
+
         if (data.ip) {
 
             $("deviceIp").textContent =
@@ -412,6 +593,10 @@ async function loadInfo() {
 
         }
 
+
+        // ----------------------------------
+        // WIFI
+        // ----------------------------------
 
         if (data.wifi) {
 
@@ -431,7 +616,14 @@ async function loadInfo() {
         }
 
 
-        if (data.signal !== undefined) {
+        // ----------------------------------
+        // SIGNAL
+        // ----------------------------------
+
+        if (
+            data.signal !==
+            undefined
+        ) {
 
             $("wifiSignal").textContent =
                 data.signal + " dBm";
@@ -461,6 +653,11 @@ async function sendCommand(
 
     if (!espAddress) {
 
+        showMessage(
+            "Connect to the ESP8266 first.",
+            true
+        );
+
         return;
 
     }
@@ -478,7 +675,9 @@ async function sendCommand(
 
     try {
 
-        await request(path);
+        await request(
+            path
+        );
 
 
         switchState.textContent =
@@ -505,6 +704,7 @@ async function sendCommand(
 
 
         showMessage(
+            error.message ||
             "The ESP8266 did not respond.",
             true
         );
@@ -535,15 +735,21 @@ async function pollStatus() {
     try {
 
         const data =
-            await request("/status");
+            await request(
+                "/status"
+            );
 
 
         setOnline(true);
 
         updateState(data);
 
-
     } catch (error) {
+
+        console.log(
+            "Status check failed:",
+            error
+        );
 
         setOnline(false);
 
