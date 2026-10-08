@@ -1,0 +1,774 @@
+/* ==========================================
+   SMART SWITCH v1.8
+   MAIN STYLES
+   ========================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+
+/* ==========================================
+   ROOT
+   ========================================== */
+
+:root {
+
+    --background: #07111f;
+
+    --card: rgba(15, 29, 48, 0.92);
+
+    --card-light: rgba(255, 255, 255, 0.045);
+
+    --border: rgba(255, 255, 255, 0.08);
+
+    --text: #f4f7fb;
+
+    --muted: #9caabb;
+
+    --blue: #4da3ff;
+
+    --green: #42d392;
+
+    --red: #ff6575;
+
+    --shadow:
+        0 20px 50px rgba(0, 0, 0, 0.28);
+
+}
+
+
+/* ==========================================
+   BODY
+   ========================================== */
+
+body {
+
+    margin: 0;
+
+    min-height: 100vh;
+
+    background:
+        radial-gradient(
+            circle at top right,
+            rgba(77, 163, 255, 0.13),
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at bottom left,
+            rgba(66, 211, 146, 0.06),
+            transparent 35%
+        ),
+        var(--background);
+
+    color: var(--text);
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+}
+
+
+/* ==========================================
+   APP CONTAINER
+   ========================================== */
+
+.app {
+
+    width: min(
+        680px,
+        100%
+    );
+
+    margin: 0 auto;
+
+    padding:
+        24px
+        16px
+        45px;
+
+}
+
+
+/* ==========================================
+   TOP BAR
+   ========================================== */
+
+.topbar {
+
+    display: flex;
+
+    align-items: flex-start;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    margin-bottom: 22px;
+
+}
+
+
+.eyebrow {
+
+    margin: 0 0 7px;
+
+    color: var(--blue);
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    letter-spacing: 2px;
+
+}
+
+
+h1 {
+
+    margin: 0;
+
+    font-size:
+        clamp(
+            23px,
+            6vw,
+            34px
+        );
+
+    line-height: 1.15;
+
+}
+
+
+h2 {
+
+    margin: 0;
+
+    font-size: 20px;
+
+    line-height: 1.3;
+
+}
+
+
+/* ==========================================
+   CONNECTION DOT
+   ========================================== */
+
+.connection-dot {
+
+    width: 13px;
+
+    height: 13px;
+
+    flex-shrink: 0;
+
+    margin-top: 8px;
+
+    border-radius: 50%;
+
+    transition:
+        background 0.25s ease,
+        box-shadow 0.25s ease;
+
+}
+
+
+.connection-dot.online {
+
+    background: var(--green);
+
+    box-shadow:
+        0 0 6px var(--green),
+        0 0 18px var(--green);
+
+}
+
+
+.connection-dot.offline {
+
+    background: var(--red);
+
+    box-shadow:
+        0 0 6px var(--red),
+        0 0 18px var(--red);
+
+}
+
+
+/* ==========================================
+   CARDS
+   ========================================== */
+
+.card {
+
+    margin-bottom: 16px;
+
+    padding: 20px;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius: 22px;
+
+    background:
+        var(--card);
+
+    box-shadow:
+        var(--shadow);
+
+}
+
+
+.hidden {
+
+    display: none !important;
+
+}
+
+
+/* ==========================================
+   CARD TEXT
+   ========================================== */
+
+.card-title {
+
+    margin-bottom: 9px;
+
+    font-size: 20px;
+
+    font-weight: 700;
+
+}
+
+
+.description {
+
+    margin: 0;
+
+    color: var(--muted);
+
+    font-size: 14px;
+
+    line-height: 1.55;
+
+}
+
+
+.label {
+
+    margin-bottom: 6px;
+
+    color: var(--blue);
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    letter-spacing: 2px;
+
+}
+
+
+.muted {
+
+    color: var(--muted);
+
+}
+
+
+/* ==========================================
+   FORM
+   ========================================== */
+
+label {
+
+    display: block;
+
+    margin:
+        19px
+        0
+        8px;
+
+    color: var(--muted);
+
+    font-size: 14px;
+
+}
+
+
+input {
+
+    width: 100%;
+
+    padding:
+        14px
+        15px;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius: 14px;
+
+    outline: none;
+
+    background:
+        rgba(0, 0, 0, 0.22);
+
+    color: var(--text);
+
+    font-size: 16px;
+
+    transition:
+        border 0.2s ease,
+        box-shadow 0.2s ease;
+
+}
+
+
+input:focus {
+
+    border-color:
+        var(--blue);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(77, 163, 255, 0.10);
+
+}
+
+
+input::placeholder {
+
+    color:
+        rgba(156, 170, 187, 0.65);
+
+}
+
+
+/* ==========================================
+   BUTTON BASE
+   ========================================== */
+
+button {
+
+    border: 0;
+
+    border-radius: 14px;
+
+    padding:
+        14px
+        18px;
+
+    cursor: pointer;
+
+    font-size: 14px;
+
+    font-weight: 800;
+
+    transition:
+        transform 0.15s ease,
+        opacity 0.15s ease,
+        filter 0.15s ease;
+
+}
+
+
+button:hover {
+
+    filter: brightness(1.08);
+
+}
+
+
+button:active {
+
+    transform:
+        scale(0.98);
+
+}
+
+
+button:disabled {
+
+    cursor: not-allowed;
+
+    opacity: 0.55;
+
+}
+
+
+/* ==========================================
+   PRIMARY BUTTON
+   ========================================== */
+
+.primary-button {
+
+    width: 100%;
+
+    margin-top: 12px;
+
+    background:
+        var(--blue);
+
+    color: #ffffff;
+
+}
+
+
+/* ==========================================
+   SECONDARY BUTTON
+   ========================================== */
+
+.secondary-button {
+
+    background:
+        rgba(255, 255, 255, 0.08);
+
+    color:
+        var(--text);
+
+}
+
+
+/* ==========================================
+   SECTION HEADER
+   ========================================== */
+
+.section-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+}
+
+
+/* ==========================================
+   STATUS BADGES
+   ========================================== */
+
+.status-badge {
+
+    padding:
+        7px
+        11px;
+
+    border-radius: 999px;
+
+    font-size: 12px;
+
+    font-weight: 800;
+
+}
+
+
+.online-badge {
+
+    background:
+        rgba(66, 211, 146, 0.14);
+
+    color:
+        var(--green);
+
+}
+
+
+.offline-badge {
+
+    background:
+        rgba(255, 101, 117, 0.14);
+
+    color:
+        var(--red);
+
+}
+
+
+/* ==========================================
+   DEVICE GRID
+   ========================================== */
+
+.device-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 12px;
+
+    margin:
+        19px
+        0;
+
+}
+
+
+.info-box {
+
+    min-width: 0;
+
+    padding: 14px;
+
+    border-radius: 15px;
+
+    background:
+        var(--card-light);
+
+}
+
+
+.info-box span {
+
+    display: block;
+
+    margin-bottom: 6px;
+
+    color:
+        var(--muted);
+
+    font-size: 12px;
+
+}
+
+
+.info-box strong {
+
+    display: block;
+
+    overflow-wrap: anywhere;
+
+    font-size: 14px;
+
+}
+
+
+/* ==========================================
+   POWER CONTROL
+   ========================================== */
+
+.power-buttons {
+
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 12px;
+
+    margin-top: 20px;
+
+}
+
+
+.power-button {
+
+    min-height: 60px;
+
+}
+
+
+.on-button {
+
+    background:
+        var(--green);
+
+    color:
+        #04150d;
+
+}
+
+
+.off-button {
+
+    background:
+        var(--red);
+
+    color:
+        #ffffff;
+
+}
+
+
+/* ==========================================
+   INFORMATION GRID
+   ========================================== */
+
+.info-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 12px;
+
+    margin-top: 18px;
+
+}
+
+
+/* ==========================================
+   MESSAGE
+   ========================================== */
+
+.message {
+
+    min-height: 20px;
+
+    margin:
+        12px
+        0
+        0;
+
+    color:
+        var(--muted);
+
+    font-size: 14px;
+
+    line-height: 1.4;
+
+}
+
+
+.message.error {
+
+    color:
+        var(--red);
+
+}
+
+
+/* ==========================================
+   FOOTER
+   ========================================== */
+
+footer {
+
+    padding:
+        20px
+        0;
+
+    text-align: center;
+
+    color:
+        var(--muted);
+
+    font-size: 12px;
+
+    line-height: 1.6;
+
+}
+
+
+footer div:first-child {
+
+    font-weight: 700;
+
+}
+
+
+/* ==========================================
+   MOBILE
+   ========================================== */
+
+@media (
+    max-width: 500px
+) {
+
+    .app {
+
+        padding:
+            20px
+            13px
+            35px;
+
+    }
+
+
+    .card {
+
+        padding:
+            18px;
+
+        border-radius:
+            19px;
+
+    }
+
+
+    .device-grid {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+
+    .info-grid {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+
+    .power-buttons {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+
+    .power-button {
+
+        min-height:
+            55px;
+
+    }
+
+}
+
+
+/* ==========================================
+   SMALL PHONES
+   ========================================== */
+
+@media (
+    max-width: 360px
+) {
+
+    h1 {
+
+        font-size:
+            22px;
+
+    }
+
+
+    h2 {
+
+        font-size:
+            18px;
+
+    }
+
+
+    .card {
+
+        padding:
+            16px;
+
+    }
+
+}

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="theme-color" content="#07111f">
+    <meta name="description" content="SMART SWITCH - Smart control. Simple living.">
+
+    <title>SMART SWITCH v1.8</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- HEADER -->
+    <header class="topbar">
+
+        <div>
+            <div class="eyebrow">
+                SMART SWITCH
+            </div>
+
+            <h1>
+                Smart control. Simple living.
+            </h1>
+        </div>
+
+        <div id="connectionDot" class="connection-dot offline"></div>
+
+    </header>
+
+
+    <!-- DEVICE CONNECTION -->
+    <section id="setupCard" class="card">
+
+        <div class="card-title">
+            Connect your device
+        </div>
+
+        <p class="description">
+            Enter the IP address displayed by your ESP8266.
+        </p>
+
+        <label for="espIp">
+            ESP8266 IP Address
+        </label>
+
+        <input
+            id="espIp"
+            type="text"
+            inputmode="decimal"
+            placeholder="192.168.137.123"
+            autocomplete="off"
+        >
+
+        <button
+            id="connectButton"
+            class="primary-button"
+        >
+            CONNECT
+        </button>
+
+        <div id="message" class="message"></div>
+
+    </section>
+
+
+    <!-- DEVICE INFORMATION -->
+    <section
+        id="deviceCard"
+        class="card hidden"
+    >
+
+        <div class="section-header">
+
+            <div>
+                <div class="label">
+                    DEVICE
+                </div>
+
+                <h2 id="deviceName">
+                    Smart Switch
+                </h2>
+            </div>
+
+            <div
+                id="deviceOnline"
+                class="status-badge offline-badge"
+            >
+                Offline
+            </div>
+
+        </div>
+
+
+        <div class="device-grid">
+
+            <div class="info-box">
+
+                <span>
+                    Device ID
+                </span>
+
+                <strong id="deviceId">
+                    —
+                </strong>
+
+            </div>
+
+
+            <div class="info-box">
+
+                <span>
+                    IP Address
+                </span>
+
+                <strong id="deviceIp">
+                    —
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <button
+            id="changeIpButton"
+            class="secondary-button"
+        >
+            CHANGE DEVICE
+        </button>
+
+    </section>
+
+
+    <!-- POWER CONTROL -->
+    <section
+        id="switchCard"
+        class="card hidden"
+    >
+
+        <div class="section-header">
+
+            <div>
+
+                <div class="label">
+                    POWER
+                </div>
+
+                <h2>
+                    Smart Switch
+                </h2>
+
+            </div>
+
+            <strong id="switchState">
+                OFF
+            </strong>
+
+        </div>
+
+
+        <div class="power-buttons">
+
+            <button
+                id="onButton"
+                class="power-button on-button"
+            >
+                TURN ON
+            </button>
+
+
+            <button
+                id="offButton"
+                class="power-button off-button"
+            >
+                TURN OFF
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- DEVICE DETAILS -->
+    <section
+        id="infoCard"
+        class="card hidden"
+    >
+
+        <div class="card-title">
+            Device Information
+        </div>
+
+
+        <div class="info-grid">
+
+            <div class="info-box">
+
+                <span>
+                    Name
+                </span>
+
+                <strong id="infoDeviceName">
+                    —
+                </strong>
+
+            </div>
+
+
+            <div class="info-box">
+
+                <span>
+                    IP
+                </span>
+
+                <strong id="infoDeviceIp">
+                    —
+                </strong>
+
+            </div>
+
+
+            <div class="info-box">
+
+                <span>
+                    Wi-Fi
+                </span>
+
+                <strong id="wifiStatus">
+                    —
+                </strong>
+
+            </div>
+
+
+            <div class="info-box">
+
+                <span>
+                    Signal
+                </span>
+
+                <strong id="wifiSignal">
+                    —
+                </strong>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- FOOTER -->
+    <footer>
+
+        <div>
+            SMART SWITCH v1.8
+        </div>
+
+        <div>
+            © 2026 Created by Newton
+        </div>
+
+    </footer>
+
+</div>
+
+
+<script src="app.js"></script>
+
+</body>
+</html>
