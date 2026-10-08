@@ -1,6 +1,6 @@
 // ==========================================
 // SMART SWITCH v1.8
-// ESP8266 CONTROL APP
+// UNIVERSAL ESP8266 CONTROL APP
 // ==========================================
 
 const $ = (id) => document.getElementById(id);
@@ -33,28 +33,143 @@ let pollTimer = null;
 
 
 // ------------------------------------------
-// VALIDATE IPv4 ADDRESS
+// CLEAN ESP ADDRESS
 // ------------------------------------------
 
-function isValidIPv4(ip) {
+function cleanESPAddress(value) {
 
-    const parts = ip.trim().split(".");
+    let address = value.trim();
 
-    if (parts.length !== 4) {
+    // Remove spaces
+    address = address.replace(/\s+/g, "");
+
+    // If user entered a protocol, keep it.
+    // Otherwise use HTTP.
+    if (
+        !address.startsWith("http://") &&
+        !address.startsWith("https://")
+    ) {
+
+        address = "http://" + address;
+
+    }
+
+    // Remove trailing slash
+    address = address.replace(/\/+$/, "");
+
+    return address;
+
+}
+
+
+// ------------------------------------------
+// VALIDATE ESP ADDRESS
+// ------------------------------------------
+
+function isValidESPAddress(value) {
+
+    if (!value || !value.trim()) {
         return false;
     }
 
-    return parts.every((part) => {
+    let address = value.trim();
 
-        if (!/^\d+$/.test(part)) {
+    // Remove protocol
+    address = address.replace(
+        /^https?:\/\//i,
+        ""
+    );
+
+    // Remove path
+    address = address.split("/")[0];
+
+    // --------------------------------------
+    // IPv4 with optional port
+    // --------------------------------------
+
+    const ipv4Pattern =
+        /^(\d{1,3}\.){3}\d{1,3}(:\d{1,5})?$/;
+
+    if (ipv4Pattern.test(address)) {
+
+        const host =
+            address.split(":")[0];
+
+        const parts =
+            host.split(".");
+
+        const validIP =
+            parts.length === 4 &&
+            parts.every((part) => {
+
+                const number =
+                    Number(part);
+
+                return (
+                    /^\d+$/.test(part) &&
+                    number >= 0 &&
+                    number <= 255
+                );
+
+            });
+
+        if (!validIP) {
             return false;
         }
 
-        const number = Number(part);
+        // Check port if supplied
+        if (address.includes(":")) {
 
-        return number >= 0 && number <= 255;
+            const port =
+                Number(
+                    address.split(":")[1]
+                );
 
-    });
+            if (
+                port < 1 ||
+                port > 65535
+            ) {
+                return false;
+            }
+
+        }
+
+        return true;
+
+    }
+
+
+    // --------------------------------------
+    // IPv6
+    // --------------------------------------
+
+    if (
+        address.includes(":") &&
+        /^[0-9a-fA-F:]+$/.test(address)
+    ) {
+
+        return true;
+
+    }
+
+
+    // --------------------------------------
+    // Hostname
+    // --------------------------------------
+
+    const hostnamePattern =
+        /^[a-zA-Z0-9.-]+(:\d{1,5})?$/;
+
+    if (
+        hostnamePattern.test(address)
+    ) {
+
+        return true;
+
+    }
+
+
+    return false;
 
 }
 
@@ -63,7 +178,10 @@ function isValidIPv4(ip) {
 // MESSAGE
 // ------------------------------------------
 
-function showMessage(text, error = false) {
+function showMessage(
+    text,
+    error = false
+) {
 
     if (!message) {
         return;
@@ -72,39 +190,69 @@ function showMessage(text, error = false) {
     message.textContent = text;
 
     if (error) {
-        message.classList.add("error");
+
+        message.classList.add(
+            "error"
+        );
+
     } else {
-        message.classList.remove("error");
+
+        message.classList.remove(
+            "error"
+        );
+
     }
 
 }
 
 
 // ------------------------------------------
-// ONLINE / OFFLINE STATUS
+// ONLINE / OFFLINE
 // ------------------------------------------
 
 function setOnline(online) {
 
     if (online) {
 
-        connectionDot.classList.add("online");
-        connectionDot.classList.remove("offline");
+        connectionDot.classList.add(
+            "online"
+        );
 
-        deviceOnline.textContent = "Online";
+        connectionDot.classList.remove(
+            "offline"
+        );
 
-        deviceOnline.classList.add("online-badge");
-        deviceOnline.classList.remove("offline-badge");
+        deviceOnline.textContent =
+            "Online";
+
+        deviceOnline.classList.add(
+            "online-badge"
+        );
+
+        deviceOnline.classList.remove(
+            "offline-badge"
+        );
 
     } else {
 
-        connectionDot.classList.remove("online");
-        connectionDot.classList.add("offline");
+        connectionDot.classList.remove(
+            "online"
+        );
 
-        deviceOnline.textContent = "Offline";
+        connectionDot.classList.add(
+            "offline"
+        );
 
-        deviceOnline.classList.remove("online-badge");
-        deviceOnline.classList.add("offline-badge");
+        deviceOnline.textContent =
+            "Offline";
+
+        deviceOnline.classList.remove(
+            "online-badge"
+        );
+
+        deviceOnline.classList.add(
+            "offline-badge"
+        );
 
     }
 
@@ -119,15 +267,31 @@ function showDeviceCards(show) {
 
     if (show) {
 
-        deviceCard.classList.remove("hidden");
-        switchCard.classList.remove("hidden");
-        infoCard.classList.remove("hidden");
+        deviceCard.classList.remove(
+            "hidden"
+        );
+
+        switchCard.classList.remove(
+            "hidden"
+        );
+
+        infoCard.classList.remove(
+            "hidden"
+        );
 
     } else {
 
-        deviceCard.classList.add("hidden");
-        switchCard.classList.add("hidden");
-        infoCard.classList.add("hidden");
+        deviceCard.classList.add(
+            "hidden"
+        );
+
+        switchCard.classList.add(
+            "hidden"
+        );
+
+        infoCard.classList.add(
+            "hidden"
+        );
 
     }
 
@@ -142,7 +306,9 @@ async function request(path) {
 
     if (!espAddress) {
 
-        throw new Error("ESP address not set.");
+        throw new Error(
+            "ESP8266 address is not set."
+        );
 
     }
 
@@ -152,7 +318,7 @@ async function request(path) {
 
 
     console.log(
-        "Smart Switch request:",
+        "SMART SWITCH →",
         url
     );
 
@@ -255,7 +421,7 @@ async function request(path) {
         ) {
 
             throw new Error(
-                "HTTPS browser security blocked the HTTP ESP8266 connection."
+                "HTTPS cannot directly access an HTTP ESP8266. Run the app locally over HTTP or use an HTTPS backend."
             );
 
         }
@@ -278,14 +444,22 @@ async function request(path) {
 
 async function connectDevice() {
 
-    const ip =
+    const enteredAddress =
         espIp.value.trim();
 
 
-    if (!isValidIPv4(ip)) {
+    // --------------------------------------
+    // VALIDATE
+    // --------------------------------------
+
+    if (
+        !isValidESPAddress(
+            enteredAddress
+        )
+    ) {
 
         showMessage(
-            "Enter a valid IPv4 address, for example 192.168.137.3.",
+            "Enter a valid ESP8266 IP address, for example 192.168.1.100.",
             true
         );
 
@@ -295,11 +469,19 @@ async function connectDevice() {
 
 
     // --------------------------------------
-    // ESP8266 uses HTTP
+    // CREATE ADDRESS
     // --------------------------------------
 
     espAddress =
-        "http://" + ip;
+        cleanESPAddress(
+            enteredAddress
+        );
+
+
+    console.log(
+        "ESP8266 ADDRESS:",
+        espAddress
+    );
 
 
     // --------------------------------------
@@ -308,25 +490,25 @@ async function connectDevice() {
 
     if (
         window.location.protocol ===
-        "https:"
+            "https:" &&
+        espAddress.startsWith("http://")
     ) {
 
         setOnline(false);
 
         showMessage(
-            "GitHub Pages uses HTTPS and cannot directly connect to the HTTP ESP8266. Run this app locally over HTTP to test the ESP.",
+            "The ESP8266 address is accepted, but this HTTPS page cannot directly connect to its HTTP server. Use the app locally over HTTP or an HTTPS backend.",
             true
-        );
-
-        console.warn(
-            "Mixed Content:",
-            espAddress
         );
 
         return;
 
     }
 
+
+    // --------------------------------------
+    // CONNECTING
+    // --------------------------------------
 
     connectButton.disabled = true;
 
@@ -348,17 +530,17 @@ async function connectDevice() {
 
 
         // ----------------------------------
-        // SAVE IP
+        // SAVE ADDRESS
         // ----------------------------------
 
         localStorage.setItem(
             "smartSwitchESP",
-            ip
+            enteredAddress
         );
 
 
         // ----------------------------------
-        // SHOW DEVICE INTERFACE
+        // SHOW DEVICE
         // ----------------------------------
 
         setupCard.classList.add(
@@ -371,14 +553,14 @@ async function connectDevice() {
 
 
         // ----------------------------------
-        // DEVICE IP
+        // DISPLAY IP
         // ----------------------------------
 
         $("deviceIp").textContent =
-            ip;
+            enteredAddress;
 
         $("infoDeviceIp").textContent =
-            ip;
+            enteredAddress;
 
 
         // ----------------------------------
@@ -450,7 +632,6 @@ async function connectDevice() {
 
         startPolling();
 
-
     } catch (error) {
 
         console.error(
@@ -466,7 +647,7 @@ async function connectDevice() {
 
         showMessage(
             error.message ||
-            "Could not connect to the ESP8266. Check the IP address and make sure the ESP is online.",
+            "Could not connect to the ESP8266. Check the address and make sure the ESP is online.",
             true
         );
 
@@ -533,10 +714,6 @@ async function loadInfo() {
             );
 
 
-        // ----------------------------------
-        // DEVICE NAME
-        // ----------------------------------
-
         if (data.name) {
 
             $("deviceName").textContent =
@@ -559,10 +736,6 @@ async function loadInfo() {
         }
 
 
-        // ----------------------------------
-        // DEVICE ID
-        // ----------------------------------
-
         if (data.id) {
 
             $("deviceId").textContent =
@@ -579,10 +752,6 @@ async function loadInfo() {
         }
 
 
-        // ----------------------------------
-        // IP
-        // ----------------------------------
-
         if (data.ip) {
 
             $("deviceIp").textContent =
@@ -593,10 +762,6 @@ async function loadInfo() {
 
         }
 
-
-        // ----------------------------------
-        // WIFI
-        // ----------------------------------
 
         if (data.wifi) {
 
@@ -616,13 +781,8 @@ async function loadInfo() {
         }
 
 
-        // ----------------------------------
-        // SIGNAL
-        // ----------------------------------
-
         if (
-            data.signal !==
-            undefined
+            data.signal !== undefined
         ) {
 
             $("wifiSignal").textContent =
@@ -633,7 +793,7 @@ async function loadInfo() {
     } catch (error) {
 
         console.log(
-            "Device info unavailable:",
+            "Device information unavailable:",
             error
         );
 
@@ -675,9 +835,7 @@ async function sendCommand(
 
     try {
 
-        await request(
-            path
-        );
+        await request(path);
 
 
         switchState.textContent =
@@ -691,7 +849,6 @@ async function sendCommand(
             "Command sent successfully."
         );
 
-
     } catch (error) {
 
         console.error(
@@ -704,7 +861,6 @@ async function sendCommand(
 
 
         showMessage(
-            error.message ||
             "The ESP8266 did not respond.",
             true
         );
@@ -726,9 +882,7 @@ async function sendCommand(
 async function pollStatus() {
 
     if (!espAddress) {
-
         return;
-
     }
 
 
@@ -747,7 +901,7 @@ async function pollStatus() {
     } catch (error) {
 
         console.log(
-            "Status check failed:",
+            "ESP status check failed:",
             error
         );
 
@@ -759,7 +913,7 @@ async function pollStatus() {
 
 
 // ------------------------------------------
-// START AUTOMATIC STATUS CHECK
+// START POLLING
 // ------------------------------------------
 
 function startPolling() {
@@ -862,7 +1016,7 @@ offButton.addEventListener(
 
 
 // ------------------------------------------
-// ENTER KEY ON IP FIELD
+// ENTER KEY
 // ------------------------------------------
 
 espIp.addEventListener(
@@ -880,26 +1034,28 @@ espIp.addEventListener(
 
 
 // ------------------------------------------
-// LOAD SAVED IP
+// LOAD SAVED ESP ADDRESS
 // ------------------------------------------
 
 window.addEventListener(
     "load",
     () => {
 
-        const savedIp =
+        const savedAddress =
             localStorage.getItem(
                 "smartSwitchESP"
             );
 
 
         if (
-            savedIp &&
-            isValidIPv4(savedIp)
+            savedAddress &&
+            isValidESPAddress(
+                savedAddress
+            )
         ) {
 
             espIp.value =
-                savedIp;
+                savedAddress;
 
         }
 
